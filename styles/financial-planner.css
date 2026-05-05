@@ -171,12 +171,18 @@ form h2 {
 
 form button {
   min-height: 0;
+  height: auto;
   font-size: 0.6rem;
   margin: 0.25rem 0;
 }
 
 form h2+button:first-of-type {
   margin: 0.25rem 0.5rem 0.25rem auto;
+}
+
+form input {
+  height: auto;
+  width: auto;
 }
 
 fieldset {
@@ -294,6 +300,7 @@ input[type="number"].percent {
 
 button {
   min-width: 1.5rem;
+  height: auto;
   border-radius: 1.5rem;
   font: inherit;
   font-size: 0.8125rem;
