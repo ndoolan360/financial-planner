@@ -669,3 +669,16 @@ section#schedule {
     transition-delay: 0.3s;
   }
 }
+
+@supports (anchor-name: --x) and (top: anchor(top)) {
+  section#scenarios {
+    anchor-name: --scenarios-section;
+  }
+
+  #add-scenario {
+    position-anchor: --scenarios-section;
+    top: anchor(top);
+    right: anchor(right);
+    margin: 0.5rem;
+  }
+}
