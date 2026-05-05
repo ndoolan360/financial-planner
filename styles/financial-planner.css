@@ -1,0 +1,635 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --transition-duration: 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-duration: 0s;
+  }
+}
+
+:has(>*>#tab-content) {
+  display: flex;
+  max-height: 100dvh;
+  height: 100dvh;
+}
+
+:has(>#tab-content) {
+  background-color: var(--background, #333);
+  color: var(--foreground, #DDD);
+  font-family: Open Sans, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1rem;
+
+  width: 100%;
+  flex: 1 1;
+  position: relative;
+  margin: 0;
+
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+#tab-content {
+  flex: 1 1;
+  min-height: 0;
+}
+
+#tab-content>section {
+  display: none;
+  position: relative;
+  flex-flow: row nowrap;
+  align-items: stretch;
+  justify-content: safe center;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 30%, transparent);
+  gap: 1rem;
+}
+
+#tab-content>section>:not(:first-child) {
+  min-height: 0;
+}
+
+#tab-content:not(:has(:target))>section:first-of-type,
+#tab-content>section:target {
+  display: flex;
+}
+
+#tabs {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 30%, transparent);
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+#tabs a {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--foreground, #DDD) 60%, transparent);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-weight: 500;
+  transition: color var(--transition-duration), border-color var(--transition-duration);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#tabs a:hover {
+  color: var(--foreground, #DDD);
+}
+
+#tabs:not(:has(~ #tab-content :target)) a[href="#scenarios"],
+#tabs:has(~ #tab-content > #scenarios:target) a[href="#scenarios"],
+#tabs:has(~ #tab-content > #chart:target) a[href="#chart"],
+#tabs:has(~ #tab-content > #schedule:target) a[href="#schedule"] {
+  color: var(--accent, royalblue);
+  border-bottom-color: var(--accent, royalblue);
+}
+
+section#chart {
+  flex: 1 1;
+  max-width: 100%;
+  flex-direction: column;
+  min-width: 0;
+}
+
+#chart-plot {
+  position: relative;
+  flex: 1 1;
+  min-height: 0;
+}
+
+#chart-plot svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+
+section#scenarios {
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+#add-scenario {
+  position: fixed;
+  top: 3rem;
+  right: 0.5rem;
+  aspect-ratio: 1;
+  font-size: 1.5rem;
+  line-height: 0;
+  border-color: var(--accent, royalblue);
+  color: var(--accent, royalblue);
+  background-color: var(--background, #333);
+  z-index: 3;
+}
+
+form {
+  display: flex;
+  position: relative;
+  flex-flow: column nowrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+  min-width: min-content;
+  width: 20rem;
+  max-width: 20rem;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  border-radius: 0.5rem;
+  overflow-y: auto;
+}
+
+form header {
+  position: sticky;
+  top: -0.75rem;
+  background-color: var(--background, #333);
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+form h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+form button {
+  min-height: 0;
+  font-size: 0.6rem;
+  margin: 0.25rem 0;
+}
+
+form h2+button:first-of-type {
+  margin: 0.25rem 0.5rem 0.25rem auto;
+}
+
+fieldset {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem 0.75rem;
+  margin: 0;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.4rem;
+}
+
+legend {
+  padding: 0 0.4rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+fieldset>label {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+}
+
+fieldset>label>span {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+fieldset>label:has(input[type="checkbox"]),
+fieldset>label:has(input[type="radio"]) {
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+input[type="number"],
+input[type="date"],
+input[type="text"],
+select,
+button {
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--foreground, #DDD);
+  background-color: var(--background, #333);
+  border: 1px solid var(--foreground, #DDD);
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.375rem;
+  min-height: 1.9rem;
+}
+
+input[type="date"],
+input[type="number"],
+select {
+  min-width: 8rem;
+  max-width: 8rem;
+  text-align: right;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--accent, royalblue);
+}
+
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent, royalblue);
+  outline-offset: 1px;
+}
+
+label:has(input[type="number"].money),
+label:has(input[type="number"].percent) {
+  position: relative;
+}
+
+label:has(input[type="number"].money)::after,
+label:has(input[type="number"].percent)::after {
+  position: absolute;
+  top: 50%;
+  bottom: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8125rem;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+label:has(input[type="number"].money)::after {
+  content: "$";
+  right: calc(8rem - 1rem);
+}
+
+label:has(input.expense-amount)::after {
+  content: "-$";
+}
+
+label:has(input[type="number"].percent)::after {
+  content: "%";
+  right: 0.5rem;
+}
+
+input[type="number"].money {
+  padding-left: 1rem;
+}
+
+input.expense-amount {
+  padding-left: 1.5rem;
+}
+
+input[type="number"].percent {
+  padding-right: .4rem;
+}
+
+button {
+  min-width: 1.5rem;
+  border-radius: 1.5rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  text-align: center;
+  cursor: pointer;
+  color: var(--foreground, #DDD);
+  background-color: var(--background, #333);
+  border: 1px solid var(--foreground, #DDD);
+  transition: background-color var(--transition-duration), color var(--transition-duration);
+}
+
+button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+input:disabled,
+select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: color-mix(in srgb, var(--foreground, #DDD) 40%, transparent);
+}
+
+label:has(input:disabled, select:disabled)>span,
+label:has(input:disabled, select:disabled)::after {
+  opacity: 0.45;
+}
+
+button:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground, #DDD) 10%, var(--background, #333));
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent, royalblue);
+  outline-offset: 1px;
+}
+
+fieldset ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.4rem;
+}
+
+fieldset .row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  align-items: center;
+  position: relative;
+  padding: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
+  border-radius: 0.4rem;
+}
+
+fieldset .liabilities-row>.row-subhead,
+fieldset .assets-row>.row-subhead,
+fieldset .event-row>.row-subhead {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  border-top: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
+  padding-top: 0.4rem;
+}
+
+fieldset .row>label:first-of-type {
+  grid-column: 1 / -1;
+}
+
+fieldset .row>.remove-row {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  margin: 0;
+  padding: 0.125rem;
+  min-width: 1.25rem;
+  border-radius: 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
+  z-index: 1;
+}
+
+.asset-share-hint {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-left: 0.25rem;
+}
+
+.event-delta-hint {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-left: 0.25rem;
+}
+
+fieldset .event-row:not(:has(.event-delta:checked)) .event-delta-hint {
+  display: none;
+}
+
+fieldset .event-row:not([data-event-mode="transfer"])>.event-transfer-amount-label {
+  display: none;
+}
+
+fieldset .event-row[data-event-mode="transfer"]>.event-value-label,
+fieldset .event-row[data-event-mode="transfer"]>.event-delta-label {
+  display: none;
+}
+
+fieldset .row>label:has(select.event-type),
+fieldset .row>label:has(input[type="checkbox"]) {
+  grid-column: 1 / -1;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+}
+
+fieldset .assets-row:not(:has(.asset-is-offset:checked))>.asset-offset-against-label,
+fieldset .assets-row:not(:has(.asset-is-offset:checked))>.asset-fallback-to-label {
+  display: none;
+}
+
+fieldset .assets-row:has(.asset-is-offset:checked)>.asset-interest-rate-label,
+fieldset .assets-row:has(.asset-is-offset:checked)>.asset-tax-on-interest-label {
+  display: none;
+}
+
+fieldset .liabilities-row:not(:has(.liability-is-minimum:checked))>.liability-original-amount-label,
+fieldset .liabilities-row:not(:has(.liability-is-minimum:checked))>.liability-original-term-label {
+  display: none;
+}
+
+fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked)>.event-end-label,
+fieldset .event-row:not(:has(.event-type [value="BETWEEN_DATES"]:checked, .event-type [value="FROM_DATE"]:checked))>.event-start-label,
+fieldset .event-row:not(:has(.event-type [value="BETWEEN_DATES"]:checked))>.event-end-label {
+  display: none;
+}
+
+fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked)>.event-compare-path-label,
+fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked)>.event-threshold-label,
+fieldset .event-row:has(.event-type [value="BETWEEN_DATES"]:checked)>.event-compare-path-label,
+fieldset .event-row:has(.event-type [value="BETWEEN_DATES"]:checked)>.event-threshold-label {
+  display: none;
+}
+
+fieldset .row>label {
+  flex: initial;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.15rem;
+  font-size: 0.75rem;
+}
+
+fieldset .row>label>span {
+  opacity: 0.7;
+}
+
+fieldset .row>label>input,
+fieldset .row>label>select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+fieldset .row>label:has(input[type="number"].money)::after {
+  left: 0.5rem;
+}
+
+#summary {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+#summary tr {
+  height: 2rem;
+}
+
+#summary th,
+#summary td {
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
+  text-align: right;
+}
+
+#summary thead th {
+  border-bottom-color: color-mix(in srgb, var(--foreground, #DDD) 35%, transparent);
+  font-weight: 600;
+}
+
+#summary thead th:first-of-type {
+  text-align: left;
+  font-variant-caps: all-small-caps;
+}
+
+#summary th[scope="row"] {
+  text-align: left;
+  font-weight: 500;
+}
+
+#summary .overdrawn {
+  color: var(--red, coral);
+  background-color: color-mix(in srgb, var(--red, coral) 10%, transparent);
+}
+
+#summary .outstanding {
+  color: var(--yellow, gold);
+  background-color: color-mix(in srgb, var(--yellow, gold) 10%, transparent);
+}
+
+#summary .overdrawn.outstanding {
+  color: var(--red, coral);
+  background-color: color-mix(in srgb, var(--red, coral) 10%, transparent);
+}
+
+.sr-only {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+section#schedule {
+  max-width: 100%;
+  flex-direction: column;
+  min-width: 0;
+  overflow: auto;
+  padding: 0;
+}
+
+#schedule-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8125rem;
+  width: max-content;
+  min-width: 100%;
+}
+
+#schedule-table th,
+#schedule-table td {
+  padding: 0.3rem 0.55rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 12%, transparent);
+  text-align: right;
+  white-space: nowrap;
+}
+
+#schedule-table thead th {
+  position: sticky;
+  background-color: var(--background, #333);
+  font-weight: 600;
+  border-bottom-color: color-mix(in srgb, var(--foreground, #DDD) 35%, transparent);
+}
+
+#schedule-table thead tr:first-child th {
+  top: 0;
+}
+
+#schedule-table thead tr th[rowspan] {
+  text-align: left;
+}
+
+#schedule-table thead tr:nth-child(2) th {
+  top: 1.775rem;
+}
+
+#schedule-table thead tr th:not(:last-child) {
+  border-right: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+}
+
+#schedule-table th[scope="row"] {
+  position: sticky;
+  left: 0;
+  background-color: var(--background, #333);
+  text-align: left;
+  font-weight: 500;
+  border-right: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  z-index: 1;
+}
+
+#schedule-table thead tr:first-child th:first-child {
+  z-index: 2;
+  left: 0;
+}
+
+#schedule-table td.quiet {
+  opacity: 0.4;
+  font-style: italic;
+}
+
+#schedule-table .empty {
+  text-align: center;
+  padding: 1.5rem;
+  opacity: 0.6;
+}
+
+@media (hover: none) {
+
+  fieldset label[title],
+  label.scenario-meta[title] {
+    position: relative;
+  }
+
+  fieldset label[title]::before,
+  label.scenario-meta[title]::before {
+    content: attr(title);
+    position: absolute;
+    z-index: 10;
+    bottom: calc(100% + 0.35rem);
+    right: 0;
+    max-width: min(18rem, 90vw);
+    width: max-content;
+    padding: 0.4rem 0.55rem;
+    background-color: color-mix(in srgb, var(--foreground, #DDD) 92%, var(--background, #333));
+    color: var(--background, #333);
+    border-radius: 0.35rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.35;
+    white-space: normal;
+    text-align: left;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(0.2rem);
+    transition: opacity var(--transition-duration), transform var(--transition-duration);
+  }
+
+  fieldset label[title]:hover::before,
+  fieldset label[title]:focus-within::before,
+  label.scenario-meta[title]:hover::before,
+  label.scenario-meta[title]:focus-within::before {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.3s;
+  }
+}

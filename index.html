@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<title>Financial Planner</title>
+<link rel="stylesheet" href="./styles/financial-planner.css" />
+<script defer src="./src/main.js" type="module"></script>
+
+<noscript>You need to enable Javascript to run this app.</noscript>
+
+<nav id="tabs">
+  <a href="#scenarios">Scenarios</a>
+  <a href="#chart">Chart</a>
+  <a href="#schedule">Schedule</a>
+</nav>
+
+<div id="tab-content">
+  <section id="scenarios">
+    <button id="add-scenario" type="button">+</button>
+    <template id="scenario-template">
+      <form autocomplete="off">
+        <header>
+          <h2>Scenario A</h2>
+          <button type="button" title="Duplicate" class="duplicate-scenario">📑</button>
+          <button type="button" title="Remove" class="remove-scenario">🗑️</button>
+        </header>
+
+        <label class="scenario-meta"
+          title="The date the simulation begins. All balances are taken as the values at this date, and all events and transactions are scheduled relative to it.">
+          <span>Start date</span>
+          <input type="date" class="scenario-start-date" value="">
+        </label>
+
+        <fieldset class="liabilities-fieldset">
+          <legend>Liabilities</legend>
+          <template class="liability-template">
+            <li class="row liabilities-row">
+              <button type="button" class="remove-row" title="Remove">✕</button>
+              <label>
+                <span>Label</span>
+                <input type="text" class="liability-label" placeholder="e.g. Mortgage">
+              </label>
+              <label title="The amount currently owed on this liability as at the scenario start date.">
+                <span>Current balance</span>
+                <input type="number" class="money liability-balance" value="0" min="0" step="1000">
+              </label>
+              <label
+                title="Annual interest rate charged on the outstanding balance. Interest accrues daily based on this rate.">
+                <span>Interest rate (%)</span>
+                <input type="number" class="percent liability-rate" value="0" min="0" max="100" step="0.01">
+              </label>
+              <p class="row-subhead">Repayment</p>
+              <label class="liability-repayment-amount-label"
+                title="The amount paid towards this liability each repayment period. When 'Minimum repayment?' is on, this is computed automatically from the original amount and term.">
+                <span>Amount</span>
+                <input type="number" class="money liability-repayment-amount" value="0" min="0" step="100">
+              </label>
+              <label title="How often a repayment is made (daily, weekly, fortnightly, monthly, quarterly, or yearly).">
+                <span>Freq</span>
+                <select class="liability-repayment-freq">
+                  <option value="DAILY">DAILY</option>
+                  <option value="WEEKLY">WEEKLY</option>
+                  <option value="FORTNIGHTLY">FORTNIGHTLY</option>
+                  <option value="MONTHLY" selected>MONTHLY</option>
+                  <option value="QUARTERLY">QUARTERLY</option>
+                  <option value="YEARLY">YEARLY</option>
+                </select>
+              </label>
+              <label
+                title="Day of the period on which the repayment is made (e.g. day 1 = first of the month for a monthly repayment).">
+                <span>Pay day</span>
+                <input type="number" class="liability-repayment-pay-day" value="1" min="1" max="31" step="1">
+              </label>
+              <label class="liability-is-minimum-label"
+                title="When checked, the repayment amount is the contract minimum, computed from the original amount, original term, and current interest rate.">
+                <span>Minimum repayment?</span>
+                <input type="checkbox" class="liability-is-minimum">
+              </label>
+              <label class="liability-original-amount-label"
+                title="The original principal of the loan when it was first taken out. Used to derive the minimum repayment.">
+                <span>Original amount</span>
+                <input type="number" class="money liability-original-amount" value="0" min="0" step="1000">
+              </label>
+              <label class="liability-original-term-label"
+                title="The original loan term in years. Used together with original amount and interest rate to derive the minimum repayment.">
+                <span>Original term (years)</span>
+                <input type="number" class="liability-original-term" value="0" min="0" step="0.5">
+              </label>
+            </li>
+          </template>
+          <ol class="liabilities-list"></ol>
+          <button type="button" class="add-row" data-template=".liability-template">+ Add liability</button>
+        </fieldset>
+
+        <fieldset class="assets-fieldset">
+          <legend>Assets</legend>
+          <template class="asset-template">
+            <li class="row assets-row">
+              <button type="button" class="remove-row" title="Remove">✕</button>
+              <label>
+                <span>Label</span>
+                <input type="text" class="asset-label" placeholder="e.g. Savings">
+              </label>
+              <label title="The current value of this asset as at the scenario start date.">
+                <span>Current balance</span>
+                <input type="number" class="money asset-balance" value="0" min="0" step="100">
+              </label>
+              <label
+                title="This asset's relative weight when allocating leftover net cashflow each period. Shares are normalised across all assets — an asset with share 2 receives twice as much as one with share 1.">
+                <span>
+                  Net share
+                  <output class="asset-share-hint" aria-live="polite"></output>
+                </span>
+                <input type="number" class="asset-share" value="0" min="0" step="1">
+              </label>
+              <label class="asset-is-offset-label"
+                title="When checked, this asset acts as an offset account against a chosen liability — its balance reduces the interest charged on that liability instead of earning interest itself.">
+                <span>Offset?</span>
+                <input type="checkbox" class="asset-is-offset">
+              </label>
+              <label class="asset-interest-rate-label"
+                title="Annual interest rate earned on the asset's balance. Interest accrues daily.">
+                <span>Interest rate (%)</span>
+                <input type="number" class="percent asset-rate" value="0" min="0" max="100" step="0.01">
+              </label>
+              <label class="asset-tax-on-interest-label"
+                title="Marginal tax rate applied to interest earned on this asset. Tax is deducted before the interest is credited to the balance.">
+                <span>Tax on interest (%)</span>
+                <input type="number" class="percent asset-tax" value="0" min="0" max="100" step="0.1">
+              </label>
+              <label class="asset-offset-against-label"
+                title="The liability this offset account is linked to. The offset balance reduces the interest-bearing portion of that liability.">
+                <span>Offset against</span>
+                <select class="asset-offset-against"></select>
+              </label>
+              <label class="asset-fallback-to-label"
+                title="Where surplus cash goes once the linked liability is fully paid off. If left as 'None', the offset balance simply continues to grow.">
+                <span>Fallback to</span>
+                <select class="asset-fallback-to"></select>
+              </label>
+            </li>
+          </template>
+          <ol class="assets-list"></ol>
+          <button type="button" class="add-row" data-template=".asset-template">+ Add asset</button>
+        </fieldset>
+
+        <fieldset class="incomes-fieldset">
+          <legend>Incomes</legend>
+          <template class="income-template">
+            <li class="row incomes-row">
+              <button type="button" class="remove-row" title="Remove">✕</button>
+              <label>
+                <span>Label</span>
+                <input type="text" class="income-label" placeholder="e.g. Salary">
+              </label>
+              <label title="Net amount received per pay period (after tax and other deductions).">
+                <span>Amount</span>
+                <input type="number" class="money income-amount" value="0" min="0" step="100">
+              </label>
+              <label title="How often this income is received.">
+                <span>Freq</span>
+                <select class="income-freq">
+                  <option value="DAILY">DAILY</option>
+                  <option value="WEEKLY">WEEKLY</option>
+                  <option value="FORTNIGHTLY">FORTNIGHTLY</option>
+                  <option value="MONTHLY" selected>MONTHLY</option>
+                  <option value="QUARTERLY">QUARTERLY</option>
+                  <option value="YEARLY">YEARLY</option>
+                </select>
+              </label>
+              <label
+                title="Day of the period on which the income is received (e.g. day 1 = first of the month for a monthly income).">
+                <span>Pay day</span>
+                <input type="number" class="income-pay-day" value="0" step="1">
+              </label>
+            </li>
+          </template>
+          <ol class="incomes-list"></ol>
+          <button type="button" class="add-row" data-template=".income-template">+ Add income</button>
+        </fieldset>
+
+        <fieldset class="expenses-fieldset">
+          <legend>Expenses</legend>
+          <template class="expense-template">
+            <li class="row expenses-row">
+              <button type="button" class="remove-row" title="Remove">✕</button>
+              <label>
+                <span>Label</span>
+                <input type="text" class="expense-label" placeholder="e.g. Living costs">
+              </label>
+              <label
+                title="Amount spent per period. Expenses are subtracted from net cashflow before any leftover is allocated to assets.">
+                <span>Amount</span>
+                <input type="number" class="money expense-amount" value="0" min="0" step="100">
+              </label>
+              <label title="How often this expense is incurred.">
+                <span>Freq</span>
+                <select class="expense-freq">
+                  <option value="DAILY">DAILY</option>
+                  <option value="WEEKLY">WEEKLY</option>
+                  <option value="FORTNIGHTLY">FORTNIGHTLY</option>
+                  <option value="MONTHLY" selected>MONTHLY</option>
+                  <option value="QUARTERLY">QUARTERLY</option>
+                  <option value="YEARLY">YEARLY</option>
+                </select>
+              </label>
+            </li>
+          </template>
+          <ol class="expenses-list"></ol>
+          <button type="button" class="add-row" data-template=".expense-template">+ Add expense</button>
+        </fieldset>
+
+        <fieldset class="events-fieldset">
+          <legend>Events</legend>
+          <template class="event-template">
+            <li class="row event-row">
+              <button type="button" class="remove-row" title="Remove">✕</button>
+              <label>
+                <span>Label</span>
+                <input type="text" class="event-label" placeholder="e.g. Pay rise">
+              </label>
+              <label
+                title="When the event fires. Date triggers fire on or after a given date; value triggers fire whenever a watched balance crosses a threshold.">
+                <span>Trigger</span>
+                <select class="event-type">
+                  <option value="FROM_DATE" selected>From date</option>
+                  <option value="BETWEEN_DATES">Between dates</option>
+                  <option value="VALUE_GT">When value &gt; threshold</option>
+                  <option value="VALUE_GTE">When value ≥ threshold</option>
+                  <option value="VALUE_EQ">When value = threshold</option>
+                  <option value="VALUE_LTE">When value ≤ threshold</option>
+                  <option value="VALUE_LT">When value &lt; threshold</option>
+                </select>
+              </label>
+              <label class="event-start-label"
+                title="The date from which this event becomes active. For 'From date' triggers, it stays active for the rest of the simulation; for 'Between dates', it deactivates after the end date.">
+                <span>Start</span>
+                <input type="date" class="event-start">
+              </label>
+              <label class="event-end-label"
+                title="The last date on which this event is active. After this date the event no longer applies.">
+                <span>End</span>
+                <input type="date" class="event-end">
+              </label>
+              <label class="event-compare-path-label"
+                title="The balance to watch. The trigger fires whenever this balance compares against the threshold in the chosen way.">
+                <span>Value</span>
+                <select class="event-compare-path"></select>
+              </label>
+              <label class="event-threshold-label" title="The numeric threshold the watched value is compared against.">
+                <span>Threshold</span>
+                <input type="number" class="event-threshold" step="any">
+              </label>
+              <p class="row-subhead">Effect</p>
+              <label class="event-effect-path-label"
+                title="The field to modify when this event fires. If both this and the trigger Value are balances, the event becomes a transfer between them.">
+                <span>Path</span>
+                <select class="event-path"></select>
+              </label>
+              <label class="event-delta-label"
+                title="When checked, the value is added to the field's current value rather than overwriting it. Useful for incremental adjustments like a pay rise.">
+                <span>Delta?</span>
+                <input type="checkbox" class="event-delta">
+              </label>
+              <label class="event-value-label"
+                title="The new value to write to the chosen field, or — when 'Delta?' is checked — the amount to add to its current value.">
+                <span>
+                  Value
+                  <output class="event-delta-hint" aria-live="polite"></output>
+                </span>
+                <input type="text" class="event-value" placeholder="value">
+              </label>
+              <label class="event-transfer-amount-label"
+                title="Amount to move from the trigger Value's balance to the effect Path's balance each time this event is active. Clamped so an asset can't go negative and a liability can't be overpaid past zero.">
+                <span>Transfer amount</span>
+                <input type="number" class="money event-transfer-amount" step="any">
+              </label>
+            </li>
+          </template>
+          <ol class="events-list"></ol>
+          <button type="button" class="add-row" data-template=".event-template">+ Add event</button>
+        </fieldset>
+      </form>
+    </template>
+  </section>
+  <section id="chart">
+    <div id="chart-plot">
+      <svg>
+        <g id="axes"></g>
+        <g id="savings-balance"></g>
+        <g id="loan-balance"></g>
+        <g id="chart-legend-g"></g>
+      </svg>
+    </div>
+  </section>
+  <section id="schedule">
+    <table id="schedule-table"></table>
+  </section>
+</div>
+
+<table id="summary">
+  <thead>
+    <tr>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Final assets total</th>
+    </tr>
+    <tr>
+      <th scope="row">Total liability interest paid</th>
+    </tr>
+    <tr>
+      <th scope="row">Total asset interest earned</th>
+    </tr>
+    <tr>
+      <th scope="row">Total tax paid on interest</th>
+    </tr>
+    <tr>
+      <th scope="row">Last liability paid off</th>
+    </tr>
+  </tbody>
+</table>
