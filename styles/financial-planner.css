@@ -470,6 +470,35 @@ fieldset .row>label:has(input[type="number"].money)::after {
   left: 0.5rem;
 }
 
+#summary-details {
+  border-top: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  background-color: var(--background, #333);
+  flex-shrink: 0;
+  max-height: 50dvh;
+  overflow: auto;
+}
+
+#summary-details>summary {
+  position: sticky;
+  top: 0;
+  background-color: var(--background, #333);
+  padding: 0.4rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  user-select: none;
+  z-index: 1;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
+}
+
+#summary-details>summary:hover {
+  color: var(--accent, royalblue);
+}
+
+#summary-details:not([open])>summary {
+  border-bottom-color: transparent;
+}
+
 #summary {
   border-collapse: collapse;
   width: 100%;
