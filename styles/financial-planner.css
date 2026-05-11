@@ -385,7 +385,6 @@ fieldset .row>.remove-row {
   min-width: 1.25rem;
   border-radius: 0.4rem;
   border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
-  z-index: 1;
 }
 
 .asset-share-hint {
