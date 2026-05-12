@@ -4,6 +4,8 @@
 
 :root {
   --transition-duration: 0.2s;
+  --tab-h: 2.5rem;
+  --gutter: 1rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -12,63 +14,45 @@
   }
 }
 
-:has(>*>#tab-content) {
-  display: flex;
-  max-height: 100dvh;
-  height: 100dvh;
-}
-
 :has(>#tab-content) {
   background-color: var(--background, #333);
   color: var(--foreground, #DDD);
   font-family: Open Sans, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 1rem;
-
-  width: 100%;
-  flex: 1 1;
-  position: relative;
   margin: 0;
-
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: stretch;
-  overflow: hidden;
+  min-height: 100dvh;
 }
 
 #tab-content {
-  flex: 1 1;
-  min-height: 0;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem var(--gutter);
 }
 
 #tab-content>section {
   display: none;
   position: relative;
-  flex-flow: row nowrap;
-  align-items: stretch;
-  justify-content: safe center;
-  height: 100%;
-  width: 100%;
-  max-width: 100%;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 30%, transparent);
-  gap: 1rem;
-}
-
-#tab-content>section>:not(:first-child) {
-  min-height: 0;
 }
 
 #tab-content:not(:has(:target))>section:first-of-type,
 #tab-content>section:target {
-  display: flex;
+  display: block;
 }
 
 #tabs {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   flex-flow: row nowrap;
+  align-items: center;
   gap: 0;
+  height: var(--tab-h);
+  padding: 0 var(--gutter);
   border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 30%, transparent);
-  flex-shrink: 0;
+  background-color: color-mix(in srgb, var(--background, #333) 88%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -99,30 +83,25 @@
 }
 
 section#chart {
-  flex: 1 1;
   max-width: 100%;
-  flex-direction: column;
-  min-width: 0;
 }
 
 #chart-plot {
   position: relative;
-  flex: 1 1;
-  min-height: 0;
+  width: 100%;
+  height: clamp(320px, 60vh, 560px);
 }
 
 #chart-plot svg {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   overflow: visible;
 }
 
 
-section#scenarios {
-  overflow-y: hidden;
-  overflow-x: auto;
+section#scenarios>form+form {
+  margin-top: 1.5rem;
 }
 
 #add-scenario {
@@ -143,25 +122,23 @@ form {
   position: relative;
   flex-flow: column nowrap;
   gap: 0.75rem;
-  align-items: flex-start;
-  min-width: min-content;
-  width: 20rem;
-  max-width: 20rem;
+  align-items: stretch;
+  width: 100%;
   padding: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
   border-radius: 0.5rem;
-  overflow-y: auto;
 }
 
 form header {
   position: sticky;
-  top: -0.75rem;
+  top: var(--tab-h);
   background-color: var(--background, #333);
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0.25rem 0;
 }
 
 form h2 {
@@ -349,9 +326,9 @@ fieldset ol {
 
 fieldset .row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.3rem;
-  align-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.3rem 0.6rem;
+  align-items: start;
   position: relative;
   padding: 0.5rem;
   border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
@@ -457,6 +434,10 @@ fieldset .row>label {
 
 fieldset .row>label>span {
   opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 fieldset .row>label>input,
@@ -470,9 +451,13 @@ fieldset .row>label:has(input[type="number"].money)::after {
 }
 
 #summary-details {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
   border-top: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
-  background-color: var(--background, #333);
-  flex-shrink: 0;
+  background-color: color-mix(in srgb, var(--background, #333) 96%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
   max-height: 50dvh;
   overflow: auto;
 }
@@ -556,10 +541,10 @@ fieldset .row>label:has(input[type="number"].money)::after {
 
 section#schedule {
   max-width: 100%;
-  flex-direction: column;
-  min-width: 0;
   overflow: auto;
-  padding: 0;
+  max-height: calc(100dvh - var(--tab-h) - 2rem);
+  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  border-radius: 0.5rem;
 }
 
 #schedule-table {
@@ -625,48 +610,6 @@ section#schedule {
   text-align: center;
   padding: 1.5rem;
   opacity: 0.6;
-}
-
-@media (hover: none) {
-
-  fieldset label[title],
-  label.scenario-meta[title] {
-    position: relative;
-  }
-
-  fieldset label[title]::before,
-  label.scenario-meta[title]::before {
-    content: attr(title);
-    position: absolute;
-    z-index: 10;
-    bottom: calc(100% + 0.35rem);
-    right: 0;
-    max-width: min(18rem, 90vw);
-    width: max-content;
-    padding: 0.4rem 0.55rem;
-    background-color: color-mix(in srgb, var(--foreground, #DDD) 92%, var(--background, #333));
-    color: var(--background, #333);
-    border-radius: 0.35rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    font-size: 0.75rem;
-    font-weight: 400;
-    line-height: 1.35;
-    white-space: normal;
-    text-align: left;
-    pointer-events: none;
-    opacity: 0;
-    transform: translateY(0.2rem);
-    transition: opacity var(--transition-duration), transform var(--transition-duration);
-  }
-
-  fieldset label[title]:hover::before,
-  fieldset label[title]:focus-within::before,
-  label.scenario-meta[title]:hover::before,
-  label.scenario-meta[title]:focus-within::before {
-    opacity: 1;
-    transform: translateY(0);
-    transition-delay: 0.3s;
-  }
 }
 
 @supports (anchor-name: --x) and (top: anchor(top)) {
