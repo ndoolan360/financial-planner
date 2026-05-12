@@ -6,6 +6,7 @@
   --transition-duration: 0.2s;
   --tab-h: 2.5rem;
   --gutter: 1rem;
+  scroll-padding-top: calc(var(--tab-h) + 1rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -84,6 +85,7 @@
 
 section#chart {
   max-width: 100%;
+  min-height: calc(100dvh - var(--tab-h) - 2rem);
 }
 
 #chart-plot {
@@ -100,24 +102,92 @@ section#chart {
 }
 
 
-section#scenarios>form+form {
-  margin-top: 1.5rem;
+.scenario-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0 1rem;
+  padding: 0.25rem;
+  list-style: none;
+  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.scenario-bar>li {
+  display: contents;
+}
+
+.scenario-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2rem;
+  min-height: 0;
+  padding: 0 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: color-mix(in srgb, var(--foreground, #DDD) 70%, transparent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--transition-duration), color var(--transition-duration);
+}
+
+.scenario-pill:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground, #DDD) 8%, transparent);
+  color: var(--foreground, #DDD);
+}
+
+.scenario-pill.is-active {
+  background-color: color-mix(in srgb, var(--accent, royalblue) 18%, transparent);
+  color: var(--accent, royalblue);
+  border-color: color-mix(in srgb, var(--accent, royalblue) 35%, transparent);
+}
+
+.scenario-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--foreground, #DDD) 40%, transparent);
+  flex: 0 0 auto;
+}
+
+.scenario-pill.is-active .scenario-dot {
+  background-color: var(--accent, royalblue);
 }
 
 #add-scenario {
-  position: fixed;
-  top: 3rem;
-  right: 0.5rem;
-  aspect-ratio: 1;
-  font-size: 1.5rem;
-  line-height: 0;
-  border-color: var(--accent, royalblue);
-  color: var(--accent, royalblue);
-  background-color: var(--background, #333);
-  z-index: 3;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  min-width: 0;
+  min-height: 0;
+  margin-left: auto;
+  padding: 0;
+  font-size: 1.125rem;
+  line-height: 1;
+  border: 1px dashed color-mix(in srgb, var(--foreground, #DDD) 40%, transparent);
+  border-radius: 0.375rem;
+  background-color: transparent;
+  color: color-mix(in srgb, var(--foreground, #DDD) 70%, transparent);
 }
 
-form {
+#add-scenario:hover {
+  background-color: color-mix(in srgb, var(--foreground, #DDD) 8%, transparent);
+  color: var(--foreground, #DDD);
+  border-color: color-mix(in srgb, var(--foreground, #DDD) 60%, transparent);
+}
+
+#scenarios form {
+  display: none;
+}
+
+#scenarios form.is-active {
   display: flex;
   position: relative;
   flex-flow: column nowrap;
@@ -389,7 +459,6 @@ fieldset .event-row[data-event-mode="transfer"]>.event-delta-label {
   display: none;
 }
 
-fieldset .row>label:has(select.event-type),
 fieldset .row>label:has(input[type="checkbox"]) {
   grid-column: 1 / -1;
   flex-flow: row nowrap;
@@ -409,6 +478,10 @@ fieldset .assets-row:has(.asset-is-offset:checked)>.asset-tax-on-interest-label 
 fieldset .liabilities-row:not(:has(.liability-is-minimum:checked))>.liability-original-amount-label,
 fieldset .liabilities-row:not(:has(.liability-is-minimum:checked))>.liability-original-term-label {
   display: none;
+}
+
+fieldset .row>label:has(select.event-type) {
+  grid-column: 1 / -1;
 }
 
 fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked)>.event-end-label,
@@ -610,17 +683,4 @@ section#schedule {
   text-align: center;
   padding: 1.5rem;
   opacity: 0.6;
-}
-
-@supports (anchor-name: --x) and (top: anchor(top)) {
-  section#scenarios {
-    anchor-name: --scenarios-section;
-  }
-
-  #add-scenario {
-    position-anchor: --scenarios-section;
-    top: anchor(top);
-    right: anchor(right);
-    margin: 0.5rem;
-  }
 }

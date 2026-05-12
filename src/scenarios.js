@@ -8,6 +8,8 @@ import { must } from './utils.js';
 
 const scenariosEl = must('#scenarios');
 const scenarioTemplate = must('#scenario-template');
+const scenarioBar = must('.scenario-bar');
+const addScenarioItem = must('#add-scenario').closest('li');
 
 const APPENDERS = {
   '.liability-template': appendLiabilityRow,
@@ -159,6 +161,8 @@ function addScenario() {
   const form = newForm();
   insertForm(form);
   refreshDynamicSelects(form);
+  renderPills();
+  activateScenario(form);
 }
 
 /**
@@ -169,6 +173,50 @@ function duplicateScenario(sourceForm) {
   insertForm(form);
   writeScenario(form, readScenario(sourceForm));
   refreshDynamicSelects(form);
+  renderPills();
+  activateScenario(form);
+}
+
+/** Rebuild the pill bar to match the current list of scenario forms. */
+function renderPills() {
+  scenarioBar.querySelectorAll('li:has(.scenario-pill)').forEach(li => li.remove());
+  const forms = scenariosEl.querySelectorAll('form');
+  forms.forEach(form => {
+    const li = document.createElement('li');
+    const pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = 'scenario-pill';
+    pill.dataset.scenarioIndex = form.dataset.scenarioIndex;
+    pill.setAttribute('role', 'tab');
+    const dot = document.createElement('span');
+    dot.className = 'scenario-dot';
+    const label = document.createElement('span');
+    const fullName = form.querySelector('h2')?.textContent ?? '';
+    label.textContent = fullName.replace(/^Scenario\s+/, '') || fullName;
+    pill.append(dot, label);
+    if (form.classList.contains('is-active')) pill.classList.add('is-active');
+    li.appendChild(pill);
+    scenarioBar.insertBefore(li, addScenarioItem);
+  });
+}
+
+/**
+ * @param {?HTMLFormElement} form Form to mark active (no-op when null).
+ */
+function activateScenario(form) {
+  if (!form) return;
+  scenariosEl.querySelectorAll('form.is-active').forEach(f => f.classList.remove('is-active'));
+  scenarioBar.querySelectorAll('.scenario-pill.is-active').forEach(p => {
+    p.classList.remove('is-active');
+    p.removeAttribute('aria-selected');
+  });
+  form.classList.add('is-active');
+  const idx = form.dataset.scenarioIndex;
+  const pill = scenarioBar.querySelector(`.scenario-pill[data-scenario-index="${idx}"]`);
+  if (pill) {
+    pill.classList.add('is-active');
+    pill.setAttribute('aria-selected', 'true');
+  }
 }
 
 /**
@@ -176,7 +224,9 @@ function duplicateScenario(sourceForm) {
  */
 export function initScenarios(scenarios) {
   if (scenarios.length === 0) {
-    addScenario();
+    const form = newForm();
+    insertForm(form);
+    refreshDynamicSelects(form);
   } else {
     scenarios.forEach(scenario => {
       const form = newForm();
@@ -185,6 +235,17 @@ export function initScenarios(scenarios) {
       refreshDynamicSelects(form);
     });
   }
+
+  renderPills();
+  activateScenario(scenariosEl.querySelector('form'));
+
+  scenarioBar.addEventListener('click', (e) => {
+    const pill = e.target.closest('.scenario-pill');
+    if (!pill) return;
+    const idx = pill.dataset.scenarioIndex;
+    const form = scenariosEl.querySelector(`form[data-scenario-index="${idx}"]`);
+    if (form) activateScenario(form);
+  });
 
   scenariosEl.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
@@ -197,8 +258,15 @@ export function initScenarios(scenarios) {
     } else if (btn.classList.contains('duplicate-scenario')) {
       duplicateScenario(form);
     } else if (btn.classList.contains('remove-scenario')) {
+      const all = [...scenariosEl.querySelectorAll('form')];
+      const idx = all.indexOf(form);
       form.remove();
       updateRemoveButtons();
+      renderPills();
+      const remaining = [...scenariosEl.querySelectorAll('form')];
+      if (remaining.length) {
+        activateScenario(remaining[Math.min(idx, remaining.length - 1)]);
+      }
     } else if (btn.classList.contains('add-row')) {
       const appender = APPENDERS[btn.dataset.template];
       if (!appender) return;
