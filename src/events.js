@@ -4,14 +4,12 @@
  * @param {*} value Value to write at the leaf.
  */
 export function setPath(obj, path, value) {
-  const keys = path.split('.');
+  const keys = path.split(".");
   let current = obj;
 
   for (let i = 0; i < keys.length - 1; i++) {
     const key = /^\d+$/.test(keys[i]) ? parseInt(keys[i]) : keys[i];
-    current[key] = Array.isArray(current[key])
-      ? [...current[key]]
-      : { ...current[key] };
+    current[key] = Array.isArray(current[key]) ? [...current[key]] : { ...current[key] };
     current = current[key];
   }
 
@@ -27,7 +25,7 @@ export function setPath(obj, path, value) {
  */
 export function getPath(obj, path) {
   if (!path) return undefined;
-  const keys = path.split('.');
+  const keys = path.split(".");
   let cur = obj;
   for (const k of keys) {
     if (cur == null) return undefined;
@@ -44,7 +42,7 @@ const EQ_EPSILON = 1e-9;
 const BALANCE_PATH_RE = /^(liabilities|assets)\.\d+\.balance$/;
 
 /** True if `path` targets a runtime balance. */
-export const isBalancePath = (path) => typeof path === 'string' && BALANCE_PATH_RE.test(path);
+export const isBalancePath = (path) => typeof path === "string" && BALANCE_PATH_RE.test(path);
 
 /**
  * @param {{liabilities:Array, assets:Array}} runtime Live runtime arrays.
@@ -53,8 +51,8 @@ export const isBalancePath = (path) => typeof path === 'string' && BALANCE_PATH_
  */
 function runtimeItem(runtime, path) {
   if (!isBalancePath(path)) return null;
-  const [collection, idx] = path.split('.');
-  const arr = collection === 'liabilities' ? runtime?.liabilities : runtime?.assets;
+  const [collection, idx] = path.split(".");
+  const arr = collection === "liabilities" ? runtime?.liabilities : runtime?.assets;
   return arr?.[parseInt(idx)] ?? null;
 }
 
@@ -79,27 +77,32 @@ function resolveScalar(scenario, runtime, path) {
  */
 function isActive(event, dateStr, scenario, runtime) {
   switch (event.type) {
-    case 'BETWEEN_DATES':
+    case "BETWEEN_DATES":
       if (!event.startDate || !event.endDate) return false;
       return dateStr >= event.startDate && dateStr <= event.endDate;
-    case 'VALUE_GT':
-    case 'VALUE_GTE':
-    case 'VALUE_EQ':
-    case 'VALUE_LTE':
-    case 'VALUE_LT': {
+    case "VALUE_GT":
+    case "VALUE_GTE":
+    case "VALUE_EQ":
+    case "VALUE_LTE":
+    case "VALUE_LT": {
       const lhs = resolveScalar(scenario, runtime, event.comparePath);
       const rhs = Number(event.threshold);
-      if (typeof lhs !== 'number' || !Number.isFinite(lhs) || !Number.isFinite(rhs)) return false;
+      if (typeof lhs !== "number" || !Number.isFinite(lhs) || !Number.isFinite(rhs)) return false;
       switch (event.type) {
-        case 'VALUE_GT': return lhs > rhs;
-        case 'VALUE_GTE': return lhs >= rhs;
-        case 'VALUE_EQ': return Math.abs(lhs - rhs) < EQ_EPSILON;
-        case 'VALUE_LTE': return lhs <= rhs;
-        case 'VALUE_LT': return lhs < rhs;
+        case "VALUE_GT":
+          return lhs > rhs;
+        case "VALUE_GTE":
+          return lhs >= rhs;
+        case "VALUE_EQ":
+          return Math.abs(lhs - rhs) < EQ_EPSILON;
+        case "VALUE_LTE":
+          return lhs <= rhs;
+        case "VALUE_LT":
+          return lhs < rhs;
       }
       return false;
     }
-    case 'FROM_DATE':
+    case "FROM_DATE":
     default:
       if (!event.startDate) return false;
       return dateStr >= event.startDate;
@@ -130,8 +133,8 @@ function applyEffect(clone, runtime, event) {
     const dst = runtimeItem(runtime, event.path);
     if (!src || !dst || src === dst) return;
 
-    const srcIsLiability = event.comparePath.startsWith('liabilities.');
-    const dstIsLiability = event.path.startsWith('liabilities.');
+    const srcIsLiability = event.comparePath.startsWith("liabilities.");
+    const dstIsLiability = event.path.startsWith("liabilities.");
 
     let amount = requested;
     if (!srcIsLiability) amount = Math.min(amount, Math.max(0, src.balance));
@@ -153,7 +156,7 @@ function applyEffect(clone, runtime, event) {
   }
   const current = getPath(clone, event.path);
   const add = Number(event.value);
-  if (typeof current !== 'number' || !Number.isFinite(current) || !Number.isFinite(add)) return;
+  if (typeof current !== "number" || !Number.isFinite(current) || !Number.isFinite(add)) return;
   setPath(clone, event.path, current + add);
 }
 
@@ -194,7 +197,7 @@ export function applyEvents(scenario, dateStr, runtime = null) {
  */
 function collectRowLabels(form, rowSel, labelSel, fallback) {
   return [...form.querySelectorAll(rowSel)].map((row, i) => ({
-    id: row.dataset.id || '',
+    id: row.dataset.id || "",
     label: row.querySelector(labelSel)?.value?.trim() || `${fallback} ${i + 1}`,
   }));
 }
@@ -205,53 +208,55 @@ function collectRowLabels(form, rowSel, labelSel, fallback) {
  * @returns {Array<{label:string, options:Array<{value:string, text:string}>}>} Optgroup tree.
  */
 function buildPathOptions(form, { includeBalances = false } = {}) {
-  const liabilities = collectRowLabels(form, '.liabilities-row', '.liability-label', 'Liability');
-  const assets = collectRowLabels(form, '.assets-row', '.asset-label', 'Asset');
-  const incomes = collectRowLabels(form, '.incomes-row', '.income-label', 'Income');
-  const expenses = collectRowLabels(form, '.expenses-row', '.expense-label', 'Expense');
+  const liabilities = collectRowLabels(form, ".liabilities-row", ".liability-label", "Liability");
+  const assets = collectRowLabels(form, ".assets-row", ".asset-label", "Asset");
+  const incomes = collectRowLabels(form, ".incomes-row", ".income-label", "Income");
+  const expenses = collectRowLabels(form, ".expenses-row", ".expense-label", "Expense");
 
   const groups = [];
 
   liabilities.forEach((L, i) => {
     const options = [];
-    if (includeBalances) options.push({ value: `liabilities.${i}.balance`, text: 'Balance' });
+    if (includeBalances) options.push({ value: `liabilities.${i}.balance`, text: "Balance" });
     options.push(
-      { value: `liabilities.${i}.interestRate`, text: 'Interest rate' },
-      { value: `liabilities.${i}.repayment.amount`, text: 'Repayment amount' },
-      { value: `liabilities.${i}.repayment.freq`, text: 'Repayment frequency' },
-      { value: `liabilities.${i}.repayment.payDayOffset`, text: 'Repayment pay day' },
+      { value: `liabilities.${i}.interestRate`, text: "Interest rate" },
+      { value: `liabilities.${i}.repayment.amount`, text: "Repayment amount" },
+      { value: `liabilities.${i}.repayment.freq`, text: "Repayment frequency" },
+      { value: `liabilities.${i}.repayment.payDayOffset`, text: "Repayment pay day" },
     );
     groups.push({ label: L.label, options });
   });
 
   assets.forEach((A, i) => {
     const options = [];
-    if (includeBalances) options.push({ value: `assets.${i}.balance`, text: 'Balance' });
+    if (includeBalances) options.push({ value: `assets.${i}.balance`, text: "Balance" });
     options.push(
-      { value: `assets.${i}.interestRate`, text: 'Interest rate' },
-      { value: `assets.${i}.taxOnInterest`, text: 'Tax on interest' },
-      { value: `assets.${i}.netShare`, text: 'Net share' },
-      { value: `assets.${i}.offset.against`, text: 'Offset against' },
-      { value: `assets.${i}.offset.fallback`, text: 'Fallback to' },
+      { value: `assets.${i}.interestRate`, text: "Interest rate" },
+      { value: `assets.${i}.taxOnInterest`, text: "Tax on interest" },
+      { value: `assets.${i}.netShare`, text: "Net share" },
+      { value: `assets.${i}.offset.against`, text: "Offset against" },
+      { value: `assets.${i}.offset.fallback`, text: "Fallback to" },
     );
     groups.push({ label: A.label, options });
   });
 
   incomes.forEach((inc, i) => {
     groups.push({
-      label: inc.label, options: [
-        { value: `incomes.${i}.amount`, text: 'Amount' },
-        { value: `incomes.${i}.freq`, text: 'Frequency' },
-        { value: `incomes.${i}.payDayOffset`, text: 'Pay day' },
+      label: inc.label,
+      options: [
+        { value: `incomes.${i}.amount`, text: "Amount" },
+        { value: `incomes.${i}.freq`, text: "Frequency" },
+        { value: `incomes.${i}.payDayOffset`, text: "Pay day" },
       ],
     });
   });
 
   expenses.forEach((ex, i) => {
     groups.push({
-      label: ex.label, options: [
-        { value: `expenses.${i}.amount`, text: 'Amount' },
-        { value: `expenses.${i}.freq`, text: 'Frequency' },
+      label: ex.label,
+      options: [
+        { value: `expenses.${i}.amount`, text: "Amount" },
+        { value: `expenses.${i}.freq`, text: "Frequency" },
       ],
     });
   });
@@ -265,11 +270,14 @@ function buildPathOptions(form, { includeBalances = false } = {}) {
  * @param {string} [currentValue] Value to keep selected if still present.
  */
 function populateEventPathSelect(select, groups, currentValue) {
-  select.innerHTML = groups.map(g =>
-    `<optgroup label="${g.label}">${g.options.map(o =>
-      `<option value="${o.value}">${o.text}</option>`
-    ).join('')}</optgroup>`
-  ).join('');
+  select.innerHTML = groups
+    .map(
+      (g) =>
+        `<optgroup label="${g.label}">${g.options
+          .map((o) => `<option value="${o.value}">${o.text}</option>`)
+          .join("")}</optgroup>`,
+    )
+    .join("");
   if (currentValue) select.value = currentValue;
 }
 
@@ -287,8 +295,8 @@ export function rebuildEventPathOptions(form) {
   const writeGroupsTransfer = buildPathOptions(form, { includeBalances: true });
   const compareGroups = buildPathOptions(form, { includeBalances: true });
 
-  form.querySelectorAll('.event-row').forEach(row => {
-    const cmp = row.querySelector('.event-compare-path');
+  form.querySelectorAll(".event-row").forEach((row) => {
+    const cmp = row.querySelector(".event-compare-path");
     let cmpDesired;
     if (cmp) {
       cmpDesired = row.dataset.comparePath ?? cmp.value;
@@ -299,14 +307,14 @@ export function rebuildEventPathOptions(form) {
       cmpDesired = cmp.value;
     }
 
-    const path = row.querySelector('.event-path');
+    const path = row.querySelector(".event-path");
     if (path) {
       const isTransferRow = isBalancePath(cmpDesired);
       const groups = isTransferRow ? writeGroupsTransfer : writeGroupsConfig;
       const desired = row.dataset.path ?? path.value;
       populateEventPathSelect(path, groups, desired);
       delete row.dataset.path;
-      row.dataset.eventMode = isTransferRow && isBalancePath(path.value) ? 'transfer' : '';
+      row.dataset.eventMode = isTransferRow && isBalancePath(path.value) ? "transfer" : "";
     }
   });
 }
@@ -318,11 +326,9 @@ export function rebuildEventPathOptions(form) {
  */
 function populateSelect(select, options, desiredValue) {
   const current = desiredValue ?? select.value;
-  select.innerHTML = options.map(o =>
-    `<option value="${o.value}">${o.text}</option>`
-  ).join('');
-  const has = options.some(o => o.value === current);
-  select.value = has ? current : '';
+  select.innerHTML = options.map((o) => `<option value="${o.value}">${o.text}</option>`).join("");
+  const has = options.some((o) => o.value === current);
+  select.value = has ? current : "";
 }
 
 /**
@@ -333,34 +339,34 @@ function populateSelect(select, options, desiredValue) {
  * @param {HTMLFormElement} form Scenario form.
  */
 export function rebuildAssetTargetSelects(form) {
-  const liabilityRows = [...form.querySelectorAll('.liabilities-row')];
+  const liabilityRows = [...form.querySelectorAll(".liabilities-row")];
   const liabilityOpts = [
-    { value: '', text: 'None' },
+    { value: "", text: "None" },
     ...liabilityRows.map((row, i) => ({
-      value: row.dataset.id || '',
-      text: row.querySelector('.liability-label')?.value?.trim() || `Liability ${i + 1}`,
+      value: row.dataset.id || "",
+      text: row.querySelector(".liability-label")?.value?.trim() || `Liability ${i + 1}`,
     })),
   ];
 
-  const assetRows = [...form.querySelectorAll('.assets-row')];
+  const assetRows = [...form.querySelectorAll(".assets-row")];
 
   assetRows.forEach((row, i) => {
-    const againstSel = row.querySelector('.asset-offset-against');
+    const againstSel = row.querySelector(".asset-offset-against");
     if (againstSel) {
       const desired = row.dataset.offsetAgainst ?? undefined;
       populateSelect(againstSel, liabilityOpts, desired);
       delete row.dataset.offsetAgainst;
     }
 
-    const fallbackSel = row.querySelector('.asset-fallback-to');
+    const fallbackSel = row.querySelector(".asset-fallback-to");
     if (fallbackSel) {
       const fallbackOpts = [
-        { value: '', text: 'None' },
+        { value: "", text: "None" },
         ...assetRows
           .filter((r, j) => j !== i)
           .map((r, j) => ({
-            value: r.dataset.id || '',
-            text: r.querySelector('.asset-label')?.value?.trim() || `Asset ${j + 1}`,
+            value: r.dataset.id || "",
+            text: r.querySelector(".asset-label")?.value?.trim() || `Asset ${j + 1}`,
           })),
       ];
       const desired = row.dataset.fallbackTo ?? undefined;

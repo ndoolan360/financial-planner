@@ -4,6 +4,9 @@
 
 :root {
   --transition-duration: 0.2s;
+  --tab-h: 2.5rem;
+  --gutter: 1rem;
+  scroll-padding-top: calc(var(--tab-h) + 1rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -12,63 +15,52 @@
   }
 }
 
-:has(>*>#tab-content) {
-  display: flex;
-  max-height: 100dvh;
-  height: 100dvh;
-}
-
-:has(>#tab-content) {
+:has(> #tab-content) {
   background-color: var(--background, #333);
-  color: var(--foreground, #DDD);
-  font-family: Open Sans, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--foreground, #ddd);
+  font-family:
+    Open Sans,
+    "Segoe UI",
+    Tahoma,
+    Geneva,
+    Verdana,
+    sans-serif;
   font-size: 1rem;
-
-  width: 100%;
-  flex: 1 1;
-  position: relative;
   margin: 0;
-
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: stretch;
-  overflow: hidden;
+  min-height: 100dvh;
 }
 
 #tab-content {
-  flex: 1 1;
-  min-height: 0;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem var(--gutter);
 }
 
-#tab-content>section {
+#tab-content > section {
   display: none;
   position: relative;
-  flex-flow: row nowrap;
-  align-items: stretch;
-  justify-content: safe center;
-  height: 100%;
-  width: 100%;
-  max-width: 100%;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 30%, transparent);
-  gap: 1rem;
+  min-height: calc(100dvh - var(--tab-h) - 2rem);
 }
 
-#tab-content>section>:not(:first-child) {
-  min-height: 0;
-}
-
-#tab-content:not(:has(:target))>section:first-of-type,
-#tab-content>section:target {
-  display: flex;
+#tab-content:not(:has(:target)) > section:first-of-type,
+#tab-content > section:target {
+  display: block;
 }
 
 #tabs {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   flex-flow: row nowrap;
+  align-items: center;
   gap: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 30%, transparent);
-  flex-shrink: 0;
+  height: var(--tab-h);
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #ddd) 30%, transparent);
+  background-color: color-mix(in srgb, var(--background, #333) 88%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -77,17 +69,19 @@
   display: inline-block;
   padding: 0.5rem 1.25rem;
   text-decoration: none;
-  color: color-mix(in srgb, var(--foreground, #DDD) 60%, transparent);
+  color: color-mix(in srgb, var(--foreground, #ddd) 60%, transparent);
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   font-weight: 500;
-  transition: color var(--transition-duration), border-color var(--transition-duration);
+  transition:
+    color var(--transition-duration),
+    border-color var(--transition-duration);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 #tabs a:hover {
-  color: var(--foreground, #DDD);
+  color: var(--foreground, #ddd);
 }
 
 #tabs:not(:has(~ #tab-content :target)) a[href="#scenarios"],
@@ -99,69 +93,136 @@
 }
 
 section#chart {
-  flex: 1 1;
   max-width: 100%;
-  flex-direction: column;
-  min-width: 0;
+  min-height: calc(100dvh - var(--tab-h) - 2rem);
 }
 
 #chart-plot {
   position: relative;
-  flex: 1 1;
-  min-height: 0;
+  width: 100%;
+  height: calc(100dvh - var(--tab-h) - 2rem);
+}
+
+body:has(#summary-details[open]) #chart-plot {
+  height: calc(50dvh - var(--tab-h) - 1rem);
 }
 
 #chart-plot svg {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   overflow: visible;
 }
 
-
-section#scenarios {
-  overflow-y: hidden;
+.scenario-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0 1rem;
+  padding: 0.25rem;
+  list-style: none;
+  border: 1px solid color-mix(in srgb, var(--foreground, #ddd) 25%, transparent);
+  border-radius: 0.5rem;
   overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.scenario-bar > li {
+  display: contents;
+}
+
+.scenario-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2rem;
+  min-height: 0;
+  padding: 0 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: color-mix(in srgb, var(--foreground, #ddd) 70%, transparent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--transition-duration),
+    color var(--transition-duration);
+}
+
+.scenario-pill:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground, #ddd) 8%, transparent);
+  color: var(--foreground, #ddd);
+}
+
+.scenario-pill.is-active {
+  background-color: color-mix(in srgb, var(--accent, royalblue) 18%, transparent);
+  color: var(--accent, royalblue);
+  border-color: color-mix(in srgb, var(--accent, royalblue) 35%, transparent);
+}
+
+.scenario-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--foreground, #ddd) 40%, transparent);
+  flex: 0 0 auto;
+}
+
+.scenario-pill.is-active .scenario-dot {
+  background-color: var(--accent, royalblue);
 }
 
 #add-scenario {
-  position: fixed;
-  top: 3rem;
-  right: 0.5rem;
-  aspect-ratio: 1;
-  font-size: 1.5rem;
-  line-height: 0;
-  border-color: var(--accent, royalblue);
-  color: var(--accent, royalblue);
-  background-color: var(--background, #333);
-  z-index: 3;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  min-width: 0;
+  min-height: 0;
+  margin-left: auto;
+  padding: 0;
+  font-size: 1.125rem;
+  line-height: 1;
+  border: 1px dashed color-mix(in srgb, var(--foreground, #ddd) 40%, transparent);
+  border-radius: 0.375rem;
+  background-color: transparent;
+  color: color-mix(in srgb, var(--foreground, #ddd) 70%, transparent);
 }
 
-form {
+#add-scenario:hover {
+  background-color: color-mix(in srgb, var(--foreground, #ddd) 8%, transparent);
+  color: var(--foreground, #ddd);
+  border-color: color-mix(in srgb, var(--foreground, #ddd) 60%, transparent);
+}
+
+#scenarios form {
+  display: none;
+}
+
+#scenarios form.is-active {
   display: flex;
   position: relative;
   flex-flow: column nowrap;
   gap: 0.75rem;
-  align-items: flex-start;
-  min-width: min-content;
-  width: 20rem;
-  max-width: 20rem;
+  align-items: stretch;
+  width: 100%;
   padding: 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--foreground, #ddd) 25%, transparent);
   border-radius: 0.5rem;
-  overflow-y: auto;
 }
 
 form header {
   position: sticky;
-  top: -0.75rem;
+  top: var(--tab-h);
   background-color: var(--background, #333);
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0.25rem 0;
 }
 
 form h2 {
@@ -176,7 +237,7 @@ form button {
   margin: 0.25rem 0;
 }
 
-form h2+button:first-of-type {
+form h2 + button:first-of-type {
   margin: 0.25rem 0.5rem 0.25rem auto;
 }
 
@@ -187,7 +248,7 @@ form input {
 
 fieldset {
   width: 100%;
-  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--foreground, #ddd) 25%, transparent);
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem 0.75rem;
   margin: 0;
@@ -202,7 +263,7 @@ legend {
   font-size: 0.9rem;
 }
 
-fieldset>label {
+fieldset > label {
   display: flex;
   flex-flow: row nowrap;
   gap: 0.5rem;
@@ -211,14 +272,14 @@ fieldset>label {
   font-size: 0.8125rem;
 }
 
-fieldset>label>span {
+fieldset > label > span {
   flex: 1 1 auto;
   min-width: 0;
   white-space: nowrap;
 }
 
-fieldset>label:has(input[type="checkbox"]),
-fieldset>label:has(input[type="radio"]) {
+fieldset > label:has(input[type="checkbox"]),
+fieldset > label:has(input[type="radio"]) {
   flex-flow: row nowrap;
   align-items: center;
 }
@@ -230,9 +291,9 @@ select,
 button {
   font: inherit;
   font-size: 0.8125rem;
-  color: var(--foreground, #DDD);
+  color: var(--foreground, #ddd);
   background-color: var(--background, #333);
-  border: 1px solid var(--foreground, #DDD);
+  border: 1px solid var(--foreground, #ddd);
   border-radius: 0.375rem;
   padding: 0.25rem 0.375rem;
   min-height: 1.9rem;
@@ -295,7 +356,7 @@ input.expense-amount {
 }
 
 input[type="number"].percent {
-  padding-right: .4rem;
+  padding-right: 0.4rem;
 }
 
 button {
@@ -306,10 +367,12 @@ button {
   font-size: 0.8125rem;
   text-align: center;
   cursor: pointer;
-  color: var(--foreground, #DDD);
+  color: var(--foreground, #ddd);
   background-color: var(--background, #333);
-  border: 1px solid var(--foreground, #DDD);
-  transition: background-color var(--transition-duration), color var(--transition-duration);
+  border: 1px solid var(--foreground, #ddd);
+  transition:
+    background-color var(--transition-duration),
+    color var(--transition-duration);
 }
 
 button:disabled {
@@ -321,16 +384,16 @@ input:disabled,
 select:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-  border-color: color-mix(in srgb, var(--foreground, #DDD) 40%, transparent);
+  border-color: color-mix(in srgb, var(--foreground, #ddd) 40%, transparent);
 }
 
-label:has(input:disabled, select:disabled)>span,
+label:has(input:disabled, select:disabled) > span,
 label:has(input:disabled, select:disabled)::after {
   opacity: 0.45;
 }
 
 button:not(:disabled):hover {
-  background-color: color-mix(in srgb, var(--foreground, #DDD) 10%, var(--background, #333));
+  background-color: color-mix(in srgb, var(--foreground, #ddd) 10%, var(--background, #333));
 }
 
 button:focus-visible {
@@ -349,18 +412,18 @@ fieldset ol {
 
 fieldset .row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.3rem;
-  align-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.3rem 0.6rem;
+  align-items: start;
   position: relative;
   padding: 0.5rem;
-  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--foreground, #ddd) 15%, transparent);
   border-radius: 0.4rem;
 }
 
-fieldset .liabilities-row>.row-subhead,
-fieldset .assets-row>.row-subhead,
-fieldset .event-row>.row-subhead {
+fieldset .liabilities-row > .row-subhead,
+fieldset .assets-row > .row-subhead,
+fieldset .event-row > .row-subhead {
   grid-column: 1 / -1;
   margin: 0.25rem 0 0;
   font-size: 0.75rem;
@@ -368,15 +431,15 @@ fieldset .event-row>.row-subhead {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   opacity: 0.7;
-  border-top: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--foreground, #ddd) 15%, transparent);
   padding-top: 0.4rem;
 }
 
-fieldset .row>label:first-of-type {
+fieldset .row > label:first-of-type {
   grid-column: 1 / -1;
 }
 
-fieldset .row>.remove-row {
+fieldset .row > .remove-row {
   position: absolute;
   top: -1px;
   right: -1px;
@@ -384,8 +447,7 @@ fieldset .row>.remove-row {
   padding: 0.125rem;
   min-width: 1.25rem;
   border-radius: 0.4rem;
-  border: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
-  z-index: 1;
+  border: 1px solid color-mix(in srgb, var(--foreground, #ddd) 15%, transparent);
 }
 
 .asset-share-hint {
@@ -404,51 +466,62 @@ fieldset .event-row:not(:has(.event-delta:checked)) .event-delta-hint {
   display: none;
 }
 
-fieldset .event-row:not([data-event-mode="transfer"])>.event-transfer-amount-label {
+fieldset .event-row:not([data-event-mode="transfer"]) > .event-transfer-amount-label {
   display: none;
 }
 
-fieldset .event-row[data-event-mode="transfer"]>.event-value-label,
-fieldset .event-row[data-event-mode="transfer"]>.event-delta-label {
+fieldset .event-row[data-event-mode="transfer"] > .event-value-label,
+fieldset .event-row[data-event-mode="transfer"] > .event-delta-label {
   display: none;
 }
 
-fieldset .row>label:has(select.event-type),
-fieldset .row>label:has(input[type="checkbox"]) {
+fieldset .row > label:has(input[type="checkbox"]) {
   grid-column: 1 / -1;
   flex-flow: row nowrap;
   justify-content: space-between;
 }
 
-fieldset .assets-row:not(:has(.asset-is-offset:checked))>.asset-offset-against-label,
-fieldset .assets-row:not(:has(.asset-is-offset:checked))>.asset-fallback-to-label {
+fieldset .assets-row:not(:has(.asset-is-offset:checked)) > .asset-offset-against-label,
+fieldset .assets-row:not(:has(.asset-is-offset:checked)) > .asset-fallback-to-label {
   display: none;
 }
 
-fieldset .assets-row:has(.asset-is-offset:checked)>.asset-interest-rate-label,
-fieldset .assets-row:has(.asset-is-offset:checked)>.asset-tax-on-interest-label {
+fieldset .assets-row:has(.asset-is-offset:checked) > .asset-interest-rate-label,
+fieldset .assets-row:has(.asset-is-offset:checked) > .asset-tax-on-interest-label {
   display: none;
 }
 
-fieldset .liabilities-row:not(:has(.liability-is-minimum:checked))>.liability-original-amount-label,
-fieldset .liabilities-row:not(:has(.liability-is-minimum:checked))>.liability-original-term-label {
+fieldset
+  .liabilities-row:not(:has(.liability-is-minimum:checked))
+  > .liability-original-amount-label,
+fieldset
+  .liabilities-row:not(:has(.liability-is-minimum:checked))
+  > .liability-original-term-label {
   display: none;
 }
 
-fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked)>.event-end-label,
-fieldset .event-row:not(:has(.event-type [value="BETWEEN_DATES"]:checked, .event-type [value="FROM_DATE"]:checked))>.event-start-label,
-fieldset .event-row:not(:has(.event-type [value="BETWEEN_DATES"]:checked))>.event-end-label {
+fieldset .row > label:has(select.event-type) {
+  grid-column: 1 / -1;
+}
+
+fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked) > .event-end-label,
+fieldset
+  .event-row:not(
+    :has(.event-type [value="BETWEEN_DATES"]:checked, .event-type [value="FROM_DATE"]:checked)
+  )
+  > .event-start-label,
+fieldset .event-row:not(:has(.event-type [value="BETWEEN_DATES"]:checked)) > .event-end-label {
   display: none;
 }
 
-fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked)>.event-compare-path-label,
-fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked)>.event-threshold-label,
-fieldset .event-row:has(.event-type [value="BETWEEN_DATES"]:checked)>.event-compare-path-label,
-fieldset .event-row:has(.event-type [value="BETWEEN_DATES"]:checked)>.event-threshold-label {
+fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked) > .event-compare-path-label,
+fieldset .event-row:has(.event-type [value="FROM_DATE"]:checked) > .event-threshold-label,
+fieldset .event-row:has(.event-type [value="BETWEEN_DATES"]:checked) > .event-compare-path-label,
+fieldset .event-row:has(.event-type [value="BETWEEN_DATES"]:checked) > .event-threshold-label {
   display: none;
 }
 
-fieldset .row>label {
+fieldset .row > label {
   flex: initial;
   display: flex;
   flex-flow: column nowrap;
@@ -456,29 +529,48 @@ fieldset .row>label {
   font-size: 0.75rem;
 }
 
-fieldset .row>label>span {
+fieldset .row > label > span {
   opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
-fieldset .row>label>input,
-fieldset .row>label>select {
+fieldset .row > label > input,
+fieldset .row > label > select {
   min-width: 0;
   max-width: 100%;
 }
 
-fieldset .row>label:has(input[type="number"].money)::after {
+fieldset .row > label:has(input[type="number"].money)::after {
   left: 0.5rem;
 }
 
 #summary-details {
-  border-top: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
-  background-color: var(--background, #333);
-  flex-shrink: 0;
+  position: fixed;
+  right: 0.25rem;
+  bottom: 0.25rem;
+  z-index: 20;
+  max-width: calc(100vw - 0.5rem);
   max-height: 50dvh;
+  border: 1px solid color-mix(in srgb, var(--foreground, #ddd) 25%, transparent);
+  border-radius: 0.5rem;
+  background-color: color-mix(in srgb, var(--background, #333) 96%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
   overflow: auto;
+  opacity: 0.8;
+  transition: opacity var(--transition-duration);
 }
 
-#summary-details>summary {
+#summary-details:hover,
+#summary-details:focus-within,
+#summary-details[open] {
+  opacity: 1;
+}
+
+#summary-details > summary {
   position: sticky;
   top: 0;
   background-color: var(--background, #333);
@@ -488,20 +580,19 @@ fieldset .row>label:has(input[type="number"].money)::after {
   cursor: pointer;
   user-select: none;
   z-index: 1;
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #ddd) 15%, transparent);
 }
 
-#summary-details>summary:hover {
+#summary-details > summary:hover {
   color: var(--accent, royalblue);
 }
 
-#summary-details:not([open])>summary {
+#summary-details:not([open]) > summary {
   border-bottom-color: transparent;
 }
 
 #summary {
   border-collapse: collapse;
-  width: 100%;
   font-size: 0.875rem;
 }
 
@@ -512,12 +603,13 @@ fieldset .row>label:has(input[type="number"].money)::after {
 #summary th,
 #summary td {
   padding: 0.35rem 0.6rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 15%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #ddd) 15%, transparent);
   text-align: right;
+  white-space: nowrap;
 }
 
 #summary thead th {
-  border-bottom-color: color-mix(in srgb, var(--foreground, #DDD) 35%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--foreground, #ddd) 35%, transparent);
   font-weight: 600;
 }
 
@@ -557,10 +649,10 @@ fieldset .row>label:has(input[type="number"].money)::after {
 
 section#schedule {
   max-width: 100%;
-  flex-direction: column;
-  min-width: 0;
   overflow: auto;
-  padding: 0;
+  max-height: calc(100dvh - var(--tab-h) - 2rem);
+  border: 1px solid color-mix(in srgb, var(--foreground, #ddd) 25%, transparent);
+  border-radius: 0.5rem;
 }
 
 #schedule-table {
@@ -574,7 +666,7 @@ section#schedule {
 #schedule-table th,
 #schedule-table td {
   padding: 0.3rem 0.55rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #DDD) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground, #ddd) 12%, transparent);
   text-align: right;
   white-space: nowrap;
 }
@@ -583,7 +675,7 @@ section#schedule {
   position: sticky;
   background-color: var(--background, #333);
   font-weight: 600;
-  border-bottom-color: color-mix(in srgb, var(--foreground, #DDD) 35%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--foreground, #ddd) 35%, transparent);
 }
 
 #schedule-table thead tr:first-child th {
@@ -599,7 +691,7 @@ section#schedule {
 }
 
 #schedule-table thead tr th:not(:last-child) {
-  border-right: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--foreground, #ddd) 25%, transparent);
 }
 
 #schedule-table th[scope="row"] {
@@ -608,7 +700,7 @@ section#schedule {
   background-color: var(--background, #333);
   text-align: left;
   font-weight: 500;
-  border-right: 1px solid color-mix(in srgb, var(--foreground, #DDD) 25%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--foreground, #ddd) 25%, transparent);
   z-index: 1;
 }
 
@@ -626,59 +718,4 @@ section#schedule {
   text-align: center;
   padding: 1.5rem;
   opacity: 0.6;
-}
-
-@media (hover: none) {
-
-  fieldset label[title],
-  label.scenario-meta[title] {
-    position: relative;
-  }
-
-  fieldset label[title]::before,
-  label.scenario-meta[title]::before {
-    content: attr(title);
-    position: absolute;
-    z-index: 10;
-    bottom: calc(100% + 0.35rem);
-    right: 0;
-    max-width: min(18rem, 90vw);
-    width: max-content;
-    padding: 0.4rem 0.55rem;
-    background-color: color-mix(in srgb, var(--foreground, #DDD) 92%, var(--background, #333));
-    color: var(--background, #333);
-    border-radius: 0.35rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    font-size: 0.75rem;
-    font-weight: 400;
-    line-height: 1.35;
-    white-space: normal;
-    text-align: left;
-    pointer-events: none;
-    opacity: 0;
-    transform: translateY(0.2rem);
-    transition: opacity var(--transition-duration), transform var(--transition-duration);
-  }
-
-  fieldset label[title]:hover::before,
-  fieldset label[title]:focus-within::before,
-  label.scenario-meta[title]:hover::before,
-  label.scenario-meta[title]:focus-within::before {
-    opacity: 1;
-    transform: translateY(0);
-    transition-delay: 0.3s;
-  }
-}
-
-@supports (anchor-name: --x) and (top: anchor(top)) {
-  section#scenarios {
-    anchor-name: --scenarios-section;
-  }
-
-  #add-scenario {
-    position-anchor: --scenarios-section;
-    top: anchor(top);
-    right: anchor(right);
-    margin: 0.5rem;
-  }
 }

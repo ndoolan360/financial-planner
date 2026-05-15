@@ -1,6 +1,6 @@
 /** @returns {string} A unique id, preferring `crypto.randomUUID` when available. */
 const uuid = () =>
-  (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+  typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
     ? crypto.randomUUID()
     : `id_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
 
@@ -10,15 +10,15 @@ const uuid = () =>
  */
 export const newLiability = (overrides = {}) => ({
   id: `lia_${uuid()}`,
-  label: '',
+  label: "",
   currentBalance: 0,
   interestRate: 0,
   repayment: {
-    mode: 'FIXED',
+    mode: "FIXED",
     amount: 0,
     originalAmount: 0,
     originalTerm: 0,
-    freq: 'MONTHLY',
+    freq: "MONTHLY",
     payDayOffset: 1,
   },
   ...overrides,
@@ -30,7 +30,7 @@ export const newLiability = (overrides = {}) => ({
  */
 export const newAsset = (overrides = {}) => ({
   id: `ass_${uuid()}`,
-  label: '',
+  label: "",
   currentBalance: 0,
   interestRate: 0,
   taxOnInterest: 0,
@@ -45,9 +45,9 @@ export const newAsset = (overrides = {}) => ({
  */
 export const newIncome = (overrides = {}) => ({
   id: `inc_${uuid()}`,
-  label: '',
+  label: "",
   amount: 0,
-  freq: 'MONTHLY',
+  freq: "MONTHLY",
   payDayOffset: 1,
   ...overrides,
 });
@@ -58,9 +58,9 @@ export const newIncome = (overrides = {}) => ({
  */
 export const newExpense = (overrides = {}) => ({
   id: `exp_${uuid()}`,
-  label: '',
+  label: "",
   amount: 0,
-  freq: 'MONTHLY',
+  freq: "MONTHLY",
   ...overrides,
 });
 
@@ -70,11 +70,11 @@ export const newExpense = (overrides = {}) => ({
  */
 export const newEvent = (overrides = {}) => ({
   id: `evt_${uuid()}`,
-  label: '',
-  type: 'FROM_DATE',
-  startDate: '',
+  label: "",
+  type: "FROM_DATE",
+  startDate: "",
   endDate: null,
-  path: '',
+  path: "",
   comparePath: null,
   delta: false,
   value: 0,
@@ -90,7 +90,7 @@ const todayISO = () => new Date().toISOString().slice(0, 10);
  * @returns {object} A scenario.
  */
 export const newScenario = (overrides = {}) => ({
-  name: '',
+  name: "",
   startDate: todayISO(),
   liabilities: [],
   assets: [],

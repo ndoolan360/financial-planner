@@ -1,7 +1,5 @@
-import { applyEvents } from './events.js';
-import {
-  parseDate, addDays, formatDate, daysInYear, amountOnDay,
-} from './utils.js';
+import { applyEvents } from "./events.js";
+import { parseDate, addDays, formatDate, daysInYear, amountOnDay } from "./utils.js";
 
 // Maximum number of days to simulate (50 years).
 const CAP_DAYS = Math.floor(50 * 365.25);
@@ -19,11 +17,16 @@ const EMPTY_RESULT = {
   series: [],
   ledger: {},
   summary: {
-    finalAssetsTotal: 0, finalLiabilitiesTotal: 0,
-    totalLiabilityInterest: 0, totalAssetInterest: 0,
-    totalTax: 0, totalRepayment: 0,
-    payoffDate: null, negativeAssetDate: null,
-    cappedOut: false, days: 0,
+    finalAssetsTotal: 0,
+    finalLiabilitiesTotal: 0,
+    totalLiabilityInterest: 0,
+    totalAssetInterest: 0,
+    totalTax: 0,
+    totalRepayment: 0,
+    payoffDate: null,
+    negativeAssetDate: null,
+    cappedOut: false,
+    days: 0,
   },
 };
 
@@ -43,7 +46,7 @@ export function minimumRepayment(originalAmount, annualRate, originalTerm, freq)
   if (!(principal > 0) || !(periods > 0)) return 0;
   if (!(periodicRate > 0)) return principal / periods;
   const factor = Math.pow(1 + periodicRate, periods);
-  return principal * (periodicRate * factor) / (factor - 1);
+  return (principal * (periodicRate * factor)) / (factor - 1);
 }
 
 // Paid-off liabilities are dropped from snapshots so the chart treats them
@@ -55,9 +58,9 @@ export function minimumRepayment(originalAmount, annualRate, originalTerm, freq)
  */
 const snapshot = (liabilities, assets) => ({
   liabilities: liabilities
-    .filter(L => L.balance > 0)
-    .map(L => ({ id: L.id, balance: L.balance })),
-  assets: assets.map(A => ({ id: A.id, balance: A.balance })),
+    .filter((L) => L.balance > 0)
+    .map((L) => ({ id: L.id, balance: L.balance })),
+  assets: assets.map((A) => ({ id: A.id, balance: A.balance })),
 });
 
 /**
@@ -66,10 +69,12 @@ const snapshot = (liabilities, assets) => ({
  */
 function distributeCashflow(cash, assets) {
   if (!cash || assets.length === 0) return;
-  const shares = assets.map(a => Math.max(0, Number(a.netShare) || 0));
+  const shares = assets.map((a) => Math.max(0, Number(a.netShare) || 0));
   const total = shares.reduce((s, x) => s + x, 0);
   if (total > 0) {
-    assets.forEach((a, i) => { a.balance += cash * (shares[i] / total); });
+    assets.forEach((a, i) => {
+      a.balance += cash * (shares[i] / total);
+    });
   } else {
     const slice = cash / assets.length;
     for (const a of assets) a.balance += slice;
@@ -85,12 +90,12 @@ function rebalanceOffsets(liabilities, assets) {
     const againstId = a.offset?.against;
     const fallbackId = a.offset?.fallback;
     if (!againstId || !fallbackId) continue;
-    const lia = liabilities.find(L => L.id === againstId);
+    const lia = liabilities.find((L) => L.id === againstId);
     if (!lia) continue;
     const cap = Math.max(0, lia.balance);
     const excess = a.balance - cap;
     if (excess <= 0) continue;
-    const fb = assets.find(x => x.id === fallbackId);
+    const fb = assets.find((x) => x.id === fallbackId);
     if (!fb || fb === a) continue;
     a.balance -= excess;
     fb.balance += excess;
@@ -105,7 +110,7 @@ function redrawFromFallback(assets) {
     if (a.balance >= 0) continue;
     const fallbackId = a.offset?.fallback;
     if (!fallbackId) continue;
-    const fb = assets.find(x => x.id === fallbackId);
+    const fb = assets.find((x) => x.id === fallbackId);
     if (!fb || fb === a) continue;
     const draw = Math.min(-a.balance, Math.max(0, fb.balance));
     if (draw <= 0) continue;
@@ -123,11 +128,11 @@ function simulateOne(scenario, minDays = 0) {
   if (!scenario || !scenario.startDate) return EMPTY_RESULT;
 
   const startDate = parseDate(scenario.startDate);
-  const liabilities = (scenario.liabilities || []).map(L => ({
+  const liabilities = (scenario.liabilities || []).map((L) => ({
     id: L.id,
     balance: Number(L.currentBalance) || 0,
   }));
-  const assets = (scenario.assets || []).map(A => ({
+  const assets = (scenario.assets || []).map((A) => ({
     id: A.id,
     balance: Number(A.currentBalance) || 0,
     // Mirror the offset linkage so rebalanceOffsets can walk it without
@@ -148,9 +153,7 @@ function simulateOne(scenario, minDays = 0) {
   // Per-liability daily ledger keyed by id. Each entry corresponds to one
   // simulated day: opening balance, interest accrued that day, repayment
   // paid that day, and closing balance. Indexes line up with `series[i+1]`.
-  const ledger = Object.fromEntries(
-    liabilities.map(L => [L.id, []])
-  );
+  const ledger = Object.fromEntries(liabilities.map((L) => [L.id, []]));
   let totalLiabilityInterest = 0;
   let totalAssetInterest = 0;
   let totalTax = 0;
@@ -179,9 +182,9 @@ function simulateOne(scenario, minDays = 0) {
 
     // Capture opening balances before any same-day mutation so the ledger
     // reflects the pre-interest, pre-repayment state.
-    const openingBalances = liabilities.map(L => L.balance);
-    const dailyInterest = new Array(liabilities.length).fill(0);
-    const dailyRepayment = new Array(liabilities.length).fill(0);
+    const openingBalances = liabilities.map((L) => L.balance);
+    const dailyInterest = Array.from({ length: liabilities.length }).fill(0);
+    const dailyRepayment = Array.from({ length: liabilities.length }).fill(0);
 
     // 1. Sum offset asset balances per liability id.
     const offsetSum = new Map();
@@ -197,7 +200,7 @@ function simulateOne(scenario, minDays = 0) {
       const rate = Number(effLiabs[i]?.interestRate) || 0;
       if (rate <= 0) return;
       const base = Math.max(0, L.balance - (offsetSum.get(L.id) || 0));
-      const interest = base * rate / diy;
+      const interest = (base * rate) / diy;
       L.balance += interest;
       totalLiabilityInterest += interest;
       dailyInterest[i] = interest;
@@ -209,7 +212,7 @@ function simulateOne(scenario, minDays = 0) {
       const cfg = effAssets[i];
       const rate = Number(cfg?.interestRate) || 0;
       if (!rate) return;
-      const interest = A.balance * rate / diy;
+      const interest = (A.balance * rate) / diy;
       const taxRate = Number(cfg?.taxOnInterest) || 0;
       const tax = interest > 0 ? interest * taxRate : 0;
       A.balance += interest - tax;
@@ -228,12 +231,14 @@ function simulateOne(scenario, minDays = 0) {
       const cfg = effLiabs[i];
       const rep = cfg?.repayment;
       if (!rep) return;
-      const amount = rep.mode === 'MINIMUM'
-        ? minimumRepayment(rep.originalAmount, cfg.interestRate, rep.originalTerm, rep.freq)
-        : (Number(rep.amount) || 0);
+      const amount =
+        rep.mode === "MINIMUM"
+          ? minimumRepayment(rep.originalAmount, cfg.interestRate, rep.originalTerm, rep.freq)
+          : Number(rep.amount) || 0;
       const due = amountOnDay(
         { amount, freq: rep.freq, payDayOffset: rep.payDayOffset },
-        date, startDate,
+        date,
+        startDate,
       );
       if (due <= 0) return;
       const pay = Math.min(due, L.balance);
@@ -252,7 +257,10 @@ function simulateOne(scenario, minDays = 0) {
     // 7. Record the first day any individual asset goes negative.
     if (!negativeAssetDate) {
       for (const A of assets) {
-        if (A.balance < 0) { negativeAssetDate = dateStr; break; }
+        if (A.balance < 0) {
+          negativeAssetDate = dateStr;
+          break;
+        }
       }
     }
 
@@ -289,11 +297,16 @@ function simulateOne(scenario, minDays = 0) {
     series,
     ledger,
     summary: {
-      finalAssetsTotal, finalLiabilitiesTotal,
-      totalLiabilityInterest, totalAssetInterest,
-      totalTax, totalRepayment,
-      payoffDate, negativeAssetDate,
-      cappedOut, days: series.length - 1,
+      finalAssetsTotal,
+      finalLiabilitiesTotal,
+      totalLiabilityInterest,
+      totalAssetInterest,
+      totalTax,
+      totalRepayment,
+      payoffDate,
+      negativeAssetDate,
+      cappedOut,
+      days: series.length - 1,
     },
   };
 }
@@ -306,11 +319,11 @@ function simulateOne(scenario, minDays = 0) {
 export function simulateAll(scenarios) {
   const list = scenarios || [];
 
-  const firstPass = list.map(s => simulateOne(s, 0));
-  const target = Math.max(0, ...firstPass.map(r => r.summary.days));
+  const firstPass = list.map((s) => simulateOne(s, 0));
+  const target = Math.max(0, ...firstPass.map((r) => r.summary.days));
 
   const results = list.map((s, i) =>
-    firstPass[i].summary.days >= target ? firstPass[i] : simulateOne(s, target)
+    firstPass[i].summary.days >= target ? firstPass[i] : simulateOne(s, target),
   );
 
   return { results, simDuration: target };

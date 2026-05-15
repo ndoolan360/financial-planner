@@ -39,13 +39,20 @@ export function daysInYear(date) {
 export function perDayAmount({ amount, freq }, date) {
   const diy = daysInYear(date);
   switch (freq) {
-    case 'DAILY': return amount;
-    case 'WEEKLY': return amount / 7;
-    case 'FORTNIGHTLY': return amount / 14;
-    case 'MONTHLY': return amount * 12 / diy;
-    case 'QUARTERLY': return amount * 4 / diy;
-    case 'YEARLY': return amount / diy;
-    default: return 0;
+    case "DAILY":
+      return amount;
+    case "WEEKLY":
+      return amount / 7;
+    case "FORTNIGHTLY":
+      return amount / 14;
+    case "MONTHLY":
+      return (amount * 12) / diy;
+    case "QUARTERLY":
+      return (amount * 4) / diy;
+    case "YEARLY":
+      return amount / diy;
+    default:
+      return 0;
   }
 }
 
@@ -77,13 +84,13 @@ function lastDayOfMonth(date) {
 export function amountOnDay({ amount, freq, payDayOffset = 0 }, date, startDate) {
   if (!amount) return 0;
   switch (freq) {
-    case 'DAILY':
+    case "DAILY":
       return amount;
-    case 'WEEKLY': {
+    case "WEEKLY": {
       const target = ((payDayOffset % 7) + 7) % 7;
       return date.getDay() === target ? amount : 0;
     }
-    case 'FORTNIGHTLY': {
+    case "FORTNIGHTLY": {
       const off = ((payDayOffset % 14) + 14) % 14;
       const targetDow = off % 7;
       const targetWeek = Math.floor(off / 7);
@@ -91,13 +98,13 @@ export function amountOnDay({ amount, freq, payDayOffset = 0 }, date, startDate)
       startSunday.setDate(startSunday.getDate() - startSunday.getDay());
       const weekIdx = Math.floor(daysBetween(startSunday, date) / 7);
       const weekParity = ((weekIdx % 2) + 2) % 2;
-      return (date.getDay() === targetDow && weekParity === targetWeek) ? amount : 0;
+      return date.getDay() === targetDow && weekParity === targetWeek ? amount : 0;
     }
-    case 'MONTHLY': {
+    case "MONTHLY": {
       const target = Math.min(Math.max(1, payDayOffset || 1), lastDayOfMonth(date));
       return date.getDate() === target ? amount : 0;
     }
-    case 'QUARTERLY': {
+    case "QUARTERLY": {
       const monthsSince =
         (date.getFullYear() - startDate.getFullYear()) * 12 +
         (date.getMonth() - startDate.getMonth());
@@ -105,7 +112,7 @@ export function amountOnDay({ amount, freq, payDayOffset = 0 }, date, startDate)
       const target = Math.min(Math.max(1, payDayOffset || 1), lastDayOfMonth(date));
       return date.getDate() === target ? amount : 0;
     }
-    case 'YEARLY': {
+    case "YEARLY": {
       if (date.getMonth() !== startDate.getMonth()) return 0;
       const target = Math.min(startDate.getDate(), lastDayOfMonth(date));
       return date.getDate() === target ? amount : 0;
@@ -120,7 +127,7 @@ export function amountOnDay({ amount, freq, payDayOffset = 0 }, date, startDate)
  * @returns {Date} Local-time date.
  */
 export function parseDate(s) {
-  const [y, m, d] = s.split('-').map(Number);
+  const [y, m, d] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
 
@@ -141,7 +148,7 @@ export function addDays(date, n) {
  */
 export function formatDate(d) {
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
