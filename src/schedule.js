@@ -1,11 +1,11 @@
-import { must } from './utils.js';
+import { must } from "./utils.js";
 
-const tableEl = must('#schedule-table');
+const tableEl = must("#schedule-table");
 
 const fmtMoney = (v) => {
-  if (v == null || !Number.isFinite(v)) return '—';
+  if (v == null || !Number.isFinite(v)) return "—";
   const r = Math.round(v);
-  return `${r < 0 ? '-' : ''}$${Math.abs(r).toLocaleString()}`;
+  return `${r < 0 ? "-" : ""}$${Math.abs(r).toLocaleString()}`;
 };
 
 /** @param {string} ymd `YYYY-MM-DD`. @returns {string} `YYYY-MM`. */
@@ -13,8 +13,8 @@ const monthKey = (ymd) => ymd.slice(0, 7);
 
 /** @param {string} ym `YYYY-MM`. @returns {string} Display label, e.g. "Jan 2026". */
 const fmtMonth = (ym) => {
-  const [y, m] = ym.split('-').map(Number);
-  return new Date(y, m - 1, 1).toLocaleString(undefined, { month: 'short', year: 'numeric' });
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleString(undefined, { month: "short", year: "numeric" });
 };
 
 /**
@@ -53,9 +53,9 @@ function buildColumns(cols) {
       const rows = ledger?.[L.id] || [];
       if (rows.length === 0) return;
       out.push({
-        scenarioName: name || '?',
+        scenarioName: name || "?",
         liabilityLabel: L.label?.trim() || `Liability ${i + 1}`,
-        id: `${name || '?'}::${L.id}`,
+        id: `${name || "?"}::${L.id}`,
         buckets: bucketByMonth(rows),
       });
     });
@@ -80,10 +80,10 @@ const emptyState = () => `
 `;
 
 const SUBCOLS = [
-  { key: 'open', label: 'Open' },
-  { key: 'interest', label: 'Interest' },
-  { key: 'repayment', label: 'Repayment' },
-  { key: 'close', label: 'Close' },
+  { key: "open", label: "Open" },
+  { key: "interest", label: "Interest" },
+  { key: "repayment", label: "Repayment" },
+  { key: "close", label: "Close" },
 ];
 
 /**
@@ -100,27 +100,33 @@ export function renderSchedule(cols) {
   // Two-row header: scenario+liability title spanning 4 sub-columns each,
   // then the per-column sub-headers.
   const titleRow = ['<th rowspan="2" scope="col">Month</th>']
-    .concat(columns.map(c =>
-      `<th colspan="${SUBCOLS.length}" scope="colgroup">${c.scenarioName} \u2014 ${c.liabilityLabel}</th>`
-    ))
-    .join('');
-  const subRow = columns.flatMap(() =>
-    SUBCOLS.map(s => `<th scope="col">${s.label}</th>`)
-  ).join('');
+    .concat(
+      columns.map(
+        (c) =>
+          `<th colspan="${SUBCOLS.length}" scope="colgroup">${c.scenarioName} \u2014 ${c.liabilityLabel}</th>`,
+      ),
+    )
+    .join("");
+  const subRow = columns
+    .flatMap(() => SUBCOLS.map((s) => `<th scope="col">${s.label}</th>`))
+    .join("");
 
-  const body = months.map(ym => {
-    const cells = columns.map(c => {
-      const b = c.buckets.get(ym);
-      if (!b) {
-        // Liability hadn't started or was already paid off this month.
-        return SUBCOLS.map(() => '<td class="quiet">\u2014</td>').join('');
-      }
-      const cls = b.quiet ? ' class="quiet"' : '';
-      return SUBCOLS.map(s => `<td${cls}>${fmtMoney(b[s.key])}</td>`).join('');
-    }).join('');
-    return `<tr><th scope="row">${fmtMonth(ym)}</th>${cells}</tr>`;
-  }).join('');
+  const body = months
+    .map((ym) => {
+      const cells = columns
+        .map((c) => {
+          const b = c.buckets.get(ym);
+          if (!b) {
+            // Liability hadn't started or was already paid off this month.
+            return SUBCOLS.map(() => '<td class="quiet">\u2014</td>').join("");
+          }
+          const cls = b.quiet ? ' class="quiet"' : "";
+          return SUBCOLS.map((s) => `<td${cls}>${fmtMoney(b[s.key])}</td>`).join("");
+        })
+        .join("");
+      return `<tr><th scope="row">${fmtMonth(ym)}</th>${cells}</tr>`;
+    })
+    .join("");
 
-  tableEl.innerHTML =
-    `<thead><tr>${titleRow}</tr><tr>${subRow}</tr></thead><tbody>${body}</tbody>`;
+  tableEl.innerHTML = `<thead><tr>${titleRow}</tr><tr>${subRow}</tr></thead><tbody>${body}</tbody>`;
 }

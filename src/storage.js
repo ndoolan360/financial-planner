@@ -1,4 +1,4 @@
-const KEY = 'financial-planner.state';
+const KEY = "financial-planner.state";
 
 /** @returns {{scenarios:Array}} Empty default state. */
 const defaultState = () => ({ scenarios: [] });
